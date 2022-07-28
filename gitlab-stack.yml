@@ -1,0 +1,51 @@
+version: "3.6"
+services:
+  gitlab:
+    image: gitlab/gitlab-ce:latest
+    ports:
+      - "22:22"
+      - "8298:80"
+      - "443:443"
+    volumes:
+    - /d/Projects/Devops/gitlab/config:/etc/gitlab
+    - /d/Projects/Devops/gitlab/logs:/var/log/gitlab
+    - /d/Projects/Devops/gitlab/data:/var/opt/gitlab
+    shm_size: '256m'
+    environment:
+      GITLAB_OMNIBUS_CONFIG: "from_file('/omnibus_config.rb')"
+    configs:
+      - source: gitlab
+        target: /omnibus_config.rb
+    secrets:
+      - gitlab_root_password
+  gitlab-runner:
+    image: gitlab/gitlab-runner:alpine
+    deploy:
+      mode: replicated
+      replicas: 1
+configs:
+  gitlab:
+    file: ./gitlab.rb
+secrets:
+  gitlab_root_password:
+    file: ./root_password.txt
+
+
+# version: '3.9'
+# services:
+#   gitlab:
+#     image: 'gitlab/gitlab-ce:latest'
+#     deploy:
+#       resources:
+#         limits:
+#           cpus: '4'
+#           memory: 4096M
+#         reservations:
+#           cpus: '1'
+#           memory: 1024M
+#     ports:
+#       - '8929:80'
+#     volumes: 
+#     - /d/Projects/Devops/gitlab/config:/etc/gitlab
+#     - /d/Projects/Devops/gitlab/logs:/var/log/gitlab
+#     - /d/Projects/Devops/gitlab/data:/var/opt/gitlab

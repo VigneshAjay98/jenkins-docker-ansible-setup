@@ -1,0 +1,25 @@
+FROM centos:7
+
+# RUN cd /etc/yum.repos.d/ && \
+#     sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-* && \
+#     sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-* && \
+#     yum update -y
+
+RUN yum -y install openssh-server passwd initscripts sudo
+    
+RUN useradd remote_user && \
+    echo "4123" | passwd remote_user --stdin && \
+    echo "remote_user ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/remote_user && \
+    mkdir /home/remote_user/.ssh && \
+    chmod 700 /home/remote_user/.ssh
+
+COPY .ssh/authorized_keys /home/remote_user/.ssh/authorized_keys
+
+RUN chown remote_user:remote_user -R /home/remote_user/.ssh && \
+    chmod 600 /home/remote_user/.ssh/authorized_keys
+
+RUN /usr/sbin/sshd-keygen
+
+CMD /usr/sbin/sshd -D
+
+# EXPOSE 22

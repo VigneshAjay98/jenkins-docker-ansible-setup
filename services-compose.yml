@@ -1,0 +1,59 @@
+version: '3.6'
+services:
+  jenkins:
+    container_name: jenkins
+    image: dockeransiblejenkins
+    build:
+      context: .
+      dockerfile: dockeransiblejenkins-dockerfile
+    ports:
+      - "5001:8080"
+    volumes: 
+      - /d/Projects/Devops/jenkins_home:/var/jenkins_home
+      - //var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - ci-cd
+# networks:
+#   ci-cd:
+  remote_target1:
+    container_name: remote_target1
+    image: remote_target1
+    privileged: true
+    build:
+      context: centos
+      dockerfile: centos-dockerfile
+    networks:
+      - ci-cd
+  remote_target2:
+    container_name: remote_target2
+    image: remote_target2
+    privileged: true
+    build:
+      context: centos
+      dockerfile: centos-dockerfile
+    networks:
+      - ci-cd
+networks:
+  ci-cd:
+  # gitlab:
+  #   container_name: gitlab
+  #   image: 'gitlab/gitlab-ce:latest'
+  #   restart: always
+  #   # hostname: 'gitlab.example.com'
+  #   # environment:
+  #   #   GITLAB_OMNIBUS_CONFIG: |
+  #   #     external_url 'http://gitlab.example.com:5002'
+  #     # gitlab_rails['gitlab_shell_ssh_port'] = 2224
+  #   ports:
+  #     - '8929:80'
+  #     # - '2224:22'
+  #   volumes: 
+  #   - /d/Projects/Devops/gitlab/config:/etc/gitlab
+  #   - /d/Projects/Devops/gitlab/logs:/var/log/gitlab
+  #   - /d/Projects/Devops/gitlab/data:/var/opt/gitlab
+  #   shm_size: '256m'
+  #   networks:
+  #     - ci-cd
+
+# networks:
+#   ci-cd:

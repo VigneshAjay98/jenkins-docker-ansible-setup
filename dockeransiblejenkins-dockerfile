@@ -1,0 +1,49 @@
+FROM jenkins/jenkins
+
+# install docker, docker-compose, docker-machine
+# see: https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/
+# see: https://docs.docker.com/engine/installation/linux/linux-postinstall/
+# see: https://docs.docker.com/engine/userguide/eng-image/dockerfile_best-practices/
+
+USER root
+
+# prerequisites for docker
+RUN apt-get update \
+    && apt-get -y install \
+        apt-transport-https \
+        ca-certificates \
+        curl \
+        vim \
+        openssh-client \
+        software-properties-common
+
+# docker & ansible repos
+RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add - \
+    && echo "deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable" >> /etc/apt/sources.list.d/additional-repositories.list \
+    && echo "deb http://ftp-stud.hs-esslingen.de/ubuntu xenial main restricted universe multiverse" >> /etc/apt/sources.list.d/official-package-repositories.list \
+    && echo "deb http://ppa.launchpad.net/ansible/ansible/ubuntu focal main" >> /etc/apt/sources.list \
+    && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 437D05B5 \
+    && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 93C4A3FD7BB9C367 \
+    && apt-get update
+
+# docker
+RUN apt-get -y install docker-ce ansible
+
+# docker-compose
+RUN curl -L https://github.com/docker/compose/releases/download/1.16.1/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose \
+    && chmod +x /usr/local/bin/docker-compose && \
+    mkdir /var/jenkins_home/.ssh
+
+# Copy ssh keys from host to container
+COPY .ssh /var/jenkins_home/.ssh
+
+RUN chmod 755 /var/jenkins_home/.ssh && \
+    chmod 600 /var/jenkins_home/.ssh/id_rsa && \
+    chmod 644 /var/jenkins_home/.ssh/id_rsa.pub
+
+# give jenkins docker rights
+RUN usermod -aG docker jenkins
+    
+#   chown :docker /var/run/docker.sock
+
+USER jenkins
